@@ -17,7 +17,7 @@ tree
 show
 diff
 status
-quit
+quit/exit
 ```
 
 Phase 1:
