@@ -3,12 +3,29 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 
 	"github.com/c-bata/go-prompt"
 )
 
+var (
+	repoDir        string   // repo root directory
+	originalBranch string   // HEAD can be restored and point to original branch as is
+	originalCommit string   // original branch can be restored and point to original commit as is
+	commits        []string // commit history to navigate
+	curr           int      // current commit index 0 as first commit
+)
+
 func main() {
+	if len(os.Args) > 2 {
+		fmt.Fprintln(os.Stderr, "usage: commit2commit [repo-directory-path]")
+		os.Exit(1)
+	}
+	repoDir = "."
+	if len(os.Args) == 2 {
+		repoDir = os.Args[1]
+	}
 	p := prompt.New(executor, completer, prompt.OptionPrefix("commit2commit> "), prompt.OptionTitle("commit2commit"))
 	p.Run()
 }
@@ -52,4 +69,19 @@ func help() string {
   tree                 show commit history
   show                 show current commit
   quit, exit, q        exit`
+}
+
+// shared function to run git command
+func runGit(args ...string) error {
+	cmd := exec.Command("git", args...)
+	cmd.Dir = repoDir
+	output, err := cmd.Output()
+	if err != nil {
+		return fmt.Errorf(
+			"git command failed: %w: %s",
+			err,
+			strings.TrimSpace(string(output)),
+		)
+	}
+	return nil
 }
