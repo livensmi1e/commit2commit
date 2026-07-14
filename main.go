@@ -143,8 +143,8 @@ func restore() {
 }
 
 func next() {
-	curr++
-	if curr < len(commits) {
+	if curr <= len(commits)-2 {
+		curr++
 		goTo(commits[curr])
 	} else {
 		fmt.Println("commit reach the end")
@@ -152,8 +152,8 @@ func next() {
 }
 
 func prev() {
-	curr--
-	if curr >= 0 {
+	if curr >= 1 {
+		curr--
 		goTo(commits[curr])
 	} else {
 		fmt.Println("commit reach the start")
