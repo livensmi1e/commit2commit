@@ -41,15 +41,23 @@ func executor(s string) {
 	args := parts[1:]
 	switch cmd {
 	case "next", "n":
+		next()
 	case "prev", "p":
+		prev()
 	case "tree":
 		fmt.Printf("run command: %s with no arg\n", cmd)
 	case "show":
 		fmt.Println("show")
 	case "goto", "g":
-		goTo(args[0])
+		for _, commit := range commits {
+			if args[0] == commit {
+				goTo(args[0])
+				return
+			}
+		}
+		fmt.Println("commit not valid")
 	case "help":
-		fmt.Println(help())
+		help()
 	case "quit", "exit", "q":
 		restore()
 		fmt.Println("bye!")
@@ -71,14 +79,15 @@ func debug() {
 	fmt.Printf("commits: %v\n", commits)
 }
 
-func help() string {
-	return `Commands:
+func help() {
+	cmd := `Commands:
   next, n              move to the next commit
   prev, p              move to the previous commit
   goto, g <target>     navigate to a commit hash or index
   tree                 show commit history
   show                 show current commit
   quit, exit, q        exit`
+	fmt.Println(cmd)
 }
 
 // shared function to run git command
@@ -130,5 +139,23 @@ func restore() {
 		runGit("switch", originalBranch)
 	} else {
 		runGit("switch", "--detach", originalCommit)
+	}
+}
+
+func next() {
+	curr++
+	if curr < len(commits) {
+		goTo(commits[curr])
+	} else {
+		fmt.Println("commit reach the end")
+	}
+}
+
+func prev() {
+	curr--
+	if curr >= 0 {
+		goTo(commits[curr])
+	} else {
+		fmt.Println("commit reach the start")
 	}
 }
