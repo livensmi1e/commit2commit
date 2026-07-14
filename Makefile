@@ -5,5 +5,5 @@ BIN := commit2commit.exe
 build:
 	go build -o $(BIN)
 
-run:
-	@./$(BIN)
+run: build
+	@./$(BIN) $(ARGS)

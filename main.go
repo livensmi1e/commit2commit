@@ -26,6 +26,7 @@ func main() {
 	originalBranch, originalCommit = findOriginals()
 	commits = findCommitHistoryFromStart()
 	debug()
+	goTo(commits[0])
 	p := prompt.New(executor, completer, prompt.OptionPrefix("commit2commit> "), prompt.OptionTitle("commit2commit"))
 	p.Run()
 }
@@ -46,10 +47,11 @@ func executor(s string) {
 	case "show":
 		fmt.Println("show")
 	case "goto", "g":
-		fmt.Printf("run command: %s with with arg %s\n", cmd, args[0])
+		goTo(args[0])
 	case "help":
 		fmt.Println(help())
 	case "quit", "exit", "q":
+		restore()
 		fmt.Println("bye!")
 		os.Exit(0)
 	default:
@@ -111,5 +113,22 @@ func findOriginals() (branch, commit string) {
 
 func findCommitHistoryFromStart() []string {
 	out, _ := runGit("rev-list", "--reverse", "--first-parent", "--abbrev-commit", "HEAD")
-	return strings.Fields(out)
+	commits := strings.Fields(out)
+	if len(commits) == 0 {
+		fmt.Println("repository does not have any commits")
+		os.Exit(1)
+	}
+	return commits
+}
+
+func goTo(commit string) {
+	runGit("switch", "--detach", commit)
+}
+
+func restore() {
+	if originalBranch != "" {
+		runGit("switch", originalBranch)
+	} else {
+		runGit("switch", "--detach", originalCommit)
+	}
 }
